@@ -1,0 +1,651 @@
+---
+title: "Unsurprised"
+author: "kelvin njunge"
+date: "9/3/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# **Problem definition**
+## ** a) Specifying the question**
+Perform clustering  stating analysis and visualizations.
+
+## **b) Defining the metrics for success**
+ Bivariate and univariate Exploratory data analysis perform clustering stating insights drawn from your analysis and visualizations.
+
+## **c) Understanding the context**
+
+Kira Plastinina is a Russian brand that is sold through a defunct chain of retail stores in Russia, Ukraine, Kazakhstan, Belarus, China, Philippines, and Armenia. The brand’s Sales and Marketing team would like to understand their customer’s behavior from data that they have collected over the past year. More specifically, they would like to learn the characteristics of customer groups.
+
+## **d) Recording the Experimental Design**
+
+* Define the question, the metric for success, the context, experimental design taken.
+* Read and explore the given dataset.
+* Find and deal with outliers, anomalies, and missing data within the dataset.
+* Perform univariate and bivariate analysis.
+* Perform clustering stating insights drawn from your analysis and visualizations.
+
+## **e) Relevance of the data**
+The data used for this project is necessary for understanding their customer’s behavior from data that they have collected over the past year. More specifically, to learn the characteristics of customer groups.
+
+## ** Data analysis**
+## ** Data sourcing**
+```{r}
+library(data.table)
+library(ggplot2)
+library(dplyr)
+library(psych)
+```
+
+## ** Importing data**
+```{r}
+df <- read.csv("C:\\Users\\Ricky\\Documents\\online_shoppers_intention.csv")
+```
+##  **Previewing the top 6 entries**
+```{r}
+head(df)
+```
+#### **Previewing the bottom 6 entries**
+```{r}
+tail(df)
+```
+#### **Previewing the columns of our dataset**
+```{r}
+names(df)
+```
+## Data cleaning 
+### Completeness
+```{r}
+# checking for missing values
+colSums(is.na(df))
+```
+```{r}
+getmode <- function(v){
+  v=v[nchar(as.character(v))>0]
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]}
+```
+
+Replacing missing value with mode
+```{r}
+for (cols in colnames(df)) {
+  if (cols %in% names(df[,sapply(df, is.numeric)])) {
+    df<-df%>%mutate(!!cols := replace(!!rlang::sym(cols), is.na(!!rlang::sym(cols)), mean(!!rlang::sym(cols), na.rm=TRUE)))
+  }
+  else {
+    df<-df%>%mutate(!!cols := replace(!!rlang::sym(cols), !!rlang::sym(cols)=="", getmode(!!rlang::sym(cols))))
+  }
+}
+```
+```{r}
+colSums(is.na(df))
+```
+### **Checking for duplicates**
+```{r}
+sum(duplicated(df))
+```
+We have 119 duplicated rows
+```{r}
+# eliminating for duplicates
+df <- df[!duplicated(df), ]
+```
+
+### ***checking for outliers**
+```{r}
+boxplot(df$Administrative,main="Boxplot for Administrative",col = "cyan")
+boxplot(df$Administrative_Duration,main="Boxplot for Administrative_Duration",col = "cyan")
+boxplot(df$Informational,main="Boxplot for Informational",col = "cyan")
+boxplot(df$Informational_Duration,main="Boxplot for Informational_Duration",col = "cyan")
+boxplot(df$ProductRelated,main="Boxplot for ProductRelated",col = "cyan")
+boxplot(df$ProductRelated_Duration,main="Boxplot for ProductRelated_Duration",col = "cyan")
+boxplot(df$BounceRates,main="Boxplot for BounceRates",col = "cyan")
+boxplot(df$ExitRates,main="Boxplot for ExitRates",col = "cyan")
+boxplot(df$PageValues,main="Boxplot for PageValues",col = "cyan")
+boxplot(df$SpecialDay,main="Boxplot for SpecialDay",col = "cyan")
+boxplot(df$OperatingSystems,main="Boxplot for OperatingSystems",col = "cyan")
+boxplot(df$OperatingSystems,main="Boxplot for OperatingSystems",col = "cyan")
+boxplot(df$Browser,main="Boxplot for Browser",col = "cyan")
+boxplot(df$Region,main="Boxplot for Region",col = "cyan")
+boxplot(df$Region,main="Boxplot for Region",col = "cyan")
+boxplot(df$TrafficType,main="Boxplot for TrafficType",col = "cyan")
+boxplot(df$Weekend,main="Boxplot for Weekend",col = "cyan")
+boxplot(df$Revenue,main="Boxplot for Revenue",col = "cyan")
+```
+
+### 4. Univariate
+#### Measures of central tendency
+```{r}
+cat("The mean for Administrative is",mean(df$Administrative))
+cat("\n")
+cat("The mean for Administrative_Duration is",mean(df$Administrative_Duration))
+cat("\n")
+cat("The mean for Informational is",mean(df$Informational))
+cat("\n")
+cat("The mean for Informational_Duration is",mean(df$Informational_Duration))
+cat("\n")
+cat("The mean for ProductRelated is",mean(df$ProductRelated))
+cat("\n")
+cat("The mean for ProductRelated_Duration is",mean(df$ProductRelated_Duration))
+cat("\n")
+cat("The mean for BounceRates is",mean(df$BounceRates))
+cat("\n")
+cat("The mean for ExitRates is",mean(df$ExitRates))
+cat("\n")
+cat("The mean for PageValues is",mean(df$PageValues))
+cat("\n")
+cat("The mean for SpecialDay is",mean(df$SpecialDay))
+cat("\n")
+cat("The mean for OperatingSystems is",mean(df$OperatingSystems))
+cat("\n")
+cat("The mean for Browser is",mean(df$Browser))
+cat("\n")
+cat("The mean for Region is",mean(df$Region))
+cat("\n")
+cat("The mean for TrafficType is",mean(df$TrafficType))
+cat("\n")
+cat("The mean for Weekend is",mean(df$Weekend))
+cat("\n")
+cat("The mean for Revenue is",mean(df$Revenue))
+
+```
+##### ***Median***
+
+```{r}
+cat("The median for Administrative is",median(df$Administrative))
+cat("\n")
+cat("The median for Administrative_Duration is",mean(df$Administrative_Duration))
+cat("\n")
+cat("The median for Informational is",median(df$Informational))
+cat("\n")
+cat("The median for Informational_Duration is",mean(df$Informational_Duration))
+cat("\n")
+cat("The median for ProductRelated is",median(df$ProductRelated))
+cat("\n")
+cat("The median for ProductRelated_Duration is",median(df$ProductRelated_Duration))
+cat("\n")
+cat("The median for BounceRates is",median(df$BounceRates))
+cat("\n")
+cat("The median for ExitRates is",median(df$ExitRates))
+cat("\n")
+cat("The median for PageValues is",median(df$PageValues))
+cat("\n")
+cat("The median for SpecialDay is",median(df$SpecialDay))
+cat("\n")
+cat("The median for OperatingSystems is",median(df$OperatingSystems))
+cat("\n")
+cat("The median for Browser is",median(df$Browser))
+cat("\n")
+cat("The median for Region is",median(df$Region))
+cat("\n")
+cat("The median for TrafficType is",median(df$TrafficType))
+cat("\n")
+cat("The median for Weekend is",median(df$Weekend))
+cat("\n")
+cat("The median for Revenue is",median(df$Revenue))
+cat("\n")
+```
+
+### **Mode**
+```{r}
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]}
+```
+
+```{r}
+cat("The mode for Administrative is",getmode(df$Administrative))
+cat("\n")
+cat("The mode for Administrative_Duration is",getmode(df$Administrative_Duration))
+cat("\n")
+cat("The mode for Informational is",getmode(df$Informational))
+cat("\n")
+cat("The mode for Informational_Duration is",getmode(df$Informational_Duration))
+cat("\n")
+cat("The mode for ProductRelated is",getmode(df$ProductRelated))
+cat("\n")
+cat("The mode for ProductRelated_Duration is",getmode(df$ProductRelated_Duration))
+cat("\n")
+cat("The mode for BounceRates is",getmode(df$BounceRates))
+cat("\n")
+cat("The mode for ExitRates is",getmode(df$ExitRates))
+cat("\n")
+cat("The mode for PageValues is",getmode(df$PageValues))
+cat("\n")
+cat("The mode for SpecialDay is",getmode(df$SpecialDay))
+cat("\n")
+cat("The mode for OperatingSystems is",getmode(df$OperatingSystems))
+cat("\n")
+cat("The mode for Browser is",getmode(df$Browser))
+cat("\n")
+cat("The mode for Region is",getmode(df$Region))
+cat("\n")
+cat("The mode for TrafficType is",getmode(df$TrafficType))
+cat("\n")
+
+```
+#### **Standard deviation**
+```{r}
+cat("The standard deviation for Administrative is",sd(df$Administrative))
+cat("\n")
+cat("The standard deviation for Administrative_Duration is",sd(df$Administrative_Duration))
+cat("\n")
+cat("The standard deviation for Informational is",sd(df$Informational))
+cat("\n")
+cat("The standard deviation for Informational_Duration is",sd(df$Informational_Duration))
+cat("\n")
+cat("The standard deviation for ProductRelated is",sd(df$ProductRelated))
+cat("\n")
+cat("The standard deviation for ProductRelated_Duration is",sd(df$ProductRelated_Duration))
+cat("\n")
+cat("The standard deviation for BounceRates is",sd(df$BounceRates))
+cat("\n")
+cat("The standard deviation for ExitRates is",sd(df$ExitRates))
+cat("\n")
+cat("The standard deviation for PageValues is",sd(df$PageValues))
+cat("\n")
+cat("The standard deviation for SpecialDay is",sd(df$SpecialDay))
+cat("\n")
+cat("The standard deviation for OperatingSystems is",sd(df$OperatingSystems))
+cat("\n")
+cat("The standard deviation for Browser is",sd(df$Browser))
+cat("\n")
+cat("The standard deviation for Region is",sd(df$Region))
+cat("\n")
+cat("The standard deviation for TrafficType is",sd(df$TrafficType))
+cat("\n")
+```
+#### ***Variance**
+```{r}
+cat("The Variance for Administrative is",var(df$Administrative))
+cat("\n")
+cat("The Variance for Administrative_Duration is",var(df$Administrative_Duration))
+cat("\n")
+cat("The Variance for Informational is",var(df$Informational))
+cat("\n")
+cat("The Variance for Informational_Duration is",var(df$Informational_Duration))
+cat("\n")
+cat("The Variance for ProductRelated is",var(df$ProductRelated))
+cat("\n")
+cat("The Variance for ProductRelated_Duration is",var(df$ProductRelated_Duration))
+cat("\n")
+cat("The Variance for BounceRates is",var(df$BounceRates))
+cat("\n")
+cat("The Variance for ExitRates is",var(df$ExitRates))
+cat("\n")
+cat("The Variance for PageValues is",var(df$PageValues))
+cat("\n")
+cat("The Variance for SpecialDay is",var(df$SpecialDay))
+cat("\n")
+cat("The Variance for OperatingSystems is",var(df$OperatingSystems))
+cat("\n")
+cat("The Variance for Browser is",var(df$Browser))
+cat("\n")
+cat("The Variance for Region is",var(df$Region))
+cat("\n")
+cat("The Variance for TrafficType is",var(df$TrafficType))
+cat("\n")
+```
+### ***Measures of Dispersion***
+#### ***Minimum***
+```{r}
+library(dplyr)
+df %>% summarise_if(is.numeric,min)
+```
+#### ***Maximum***
+```{r}
+#Maximum of the columns
+df %>% summarise_if(is.numeric,max)
+```
+
+### **Quantile**
+```{r}
+cat("The quantile for Administrative is",quantile(df$Administrative))
+cat("\n")
+cat("The quantile for Administrative_Duration is",quantile(df$Administrative_Duration))
+cat("\n")
+cat("The quantile for Informational is",quantile(df$Informational))
+cat("\n")
+cat("The quantile for Informational_Duration is",range(df$Informational_Duration))
+cat("\n")
+cat("The quantile for ProductRelated is",quantile(df$ProductRelated))
+cat("\n")
+cat("The quantile for ProductRelated_Duration is",quantile(df$ProductRelated_Duration))
+cat("\n")
+cat("The quantile for BounceRates is",quantile(df$BounceRates))
+cat("\n")
+cat("The quantile for ExitRates is",quantile(df$ExitRates))
+cat("\n")
+cat("The quantile for PageValues is",quantile(df$PageValues))
+cat("\n")
+cat("The quantile for SpecialDay is",quantile(df$SpecialDay))
+cat("\n")
+cat("The quantile for OperatingSystems is",quantile(df$OperatingSystems))
+cat("\n")
+cat("The quantile for Browser is",quantile(df$Browser))
+cat("\n")
+cat("The quantile for Region is",quantile(df$Region))
+cat("\n")
+cat("The quantile for TrafficType is",quantile(df$TrafficType))
+cat("\n")
+```
+#### **Range**
+```{r}
+cat("The range for Administrative is",range(df$Administrative))
+cat("\n")
+cat("The range for Administrative_Duration is",range(df$Administrative_Duration))
+cat("\n")
+cat("The range for Informational is",range(df$Informational))
+cat("\n")
+cat("The range for Informational_Duration is",range(df$Informational_Duration))
+cat("\n")
+cat("The range for ProductRelated is",range(df$ProductRelated))
+cat("\n")
+cat("The range for ProductRelated_Duration is",range(df$ProductRelated_Duration))
+cat("\n")
+cat("The range for BounceRates is",range(df$BounceRates))
+cat("\n")
+cat("The range for ExitRates is",range(df$ExitRates))
+cat("\n")
+cat("The range for PageValues is",range(df$PageValues))
+cat("\n")
+cat("The range for SpecialDay is",range(df$SpecialDay))
+cat("\n")
+cat("The range for OperatingSystems is",range(df$OperatingSystems))
+cat("\n")
+cat("The range for Browser is",range(df$Browser))
+cat("\n")
+cat("The range for Region is",range(df$Region))
+cat("\n")
+cat("The range for TrafficType is",range(df$TrafficType))
+cat("\n")
+```
+### Summary
+```{r}
+summary(df)
+```
+#### **Barcharts**
+```{r}
+frequency <- table(df$Weekend)
+frequency
+barplot(frequency,col=c("Cyan","lightgreen"),main="Barchart for Weekend",xlab = "weekend",ylab = "Total Count")
+```
+
+```{r}
+
+frequency <- table(df$Revenue)
+frequency
+barplot(frequency,col=c("Cyan","lightgreen"),main="Barchart for Revenue",xlab = "Revenue",ylab = "Total Count")
+```
+```{r}
+frequency <- table(df$VisitorType)
+frequency
+barplot(frequency,col=c("Cyan","lightgreen"),main="Barchart for VisitorType",xlab = "VisitorType",ylab = "Total Count")
+```
+```{r}
+frequency <- table(df$Month)
+frequency
+barplot(frequency,col=c("Cyan","lightgreen"),main="Barchart for Month",xlab = "Month",ylab = "Total Count")
+```
+#### ***Histograms***
+```{r}
+library(ggplot2)
+ggplot(df, aes( Administrative)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = ' Administrative distribution', x = ' Administrative', y = 'Frequency')
+```
+```{r}
+library(ggplot2)
+ggplot(df, aes( Administrative_Duration)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = ' Administrative_Duration distribution', x = 'Administrative_Duration', y = 'Frequency')
+```
+```{r}
+library(ggplot2)
+ggplot(df, aes(Informational)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = ' Informational distribution', x = 'Informational', y = 'Frequency')
+```
+```{r}
+
+library(ggplot2)
+ggplot(df, aes(ProductRelated)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = 'ProductRelated', x = 'ProductRelated', y = 'Frequency')
+```
+
+```{r}
+library(ggplot2)
+ggplot(df, aes(ProductRelated_Duration)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = 'ProductRelated_Duration', x = 'ProductRelated_Duration', y = 'Frequency')
+```
+```{r}
+library(ggplot2)
+ggplot(df, aes(BounceRates)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = ' BounceRates', x = 'BounceRates', y = 'Frequency')
+```
+```{r}
+library(ggplot2)
+ggplot(df, aes(ExitRates)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = 'ExitRates', x = 'ExitRates', y = 'Frequency')
+```
+```{r}
+library(ggplot2)
+ggplot(df, aes(PageValues)) + geom_histogram(bins = 20, color = 'cyan') + 
+    labs(title = 'PageValues', x = 'PageValues', y = 'Frequency')
+```
+### **Bivariate Analysis**
+Examining how different variables affect the labels
+```{r}
+# Administrative sites and Revenue
+ggplot(df, aes(Administrative, color=Revenue)) +
+  geom_freqpoly(binwidth=1)
+```
+```{r}
+ggplot(df, aes(Administrative_Duration, color=Revenue)) +
+  geom_freqpoly()
+```
+
+```{r}
+ggplot(df, aes(Informational, color=Revenue)) +
+  geom_freqpoly()
+
+```
+
+```{r}
+ggplot(df, aes(Informational_Duration, color=Revenue)) +
+  geom_freqpoly()
+
+```
+```{r}
+ggplot(df, aes(ProductRelated, color=Revenue)) +
+  geom_freqpoly()
+```
+```{r}
+# Months vs GeneratingRevenue
+ggplot(df, aes(Month, color=Revenue, fill=Revenue)) +
+  geom_bar(binwidth=1)
+```
+March, May, November and December are the months which generate significantly more revenue for the business.
+```{r}
+# Day type vs Generating Revenue
+ggplot(df, aes(Weekend, color=Revenue, fill=Revenue)) +
+  geom_bar(binwidth=1)
+```
+Weekdays generate slightly more Revenue than weekends.
+```{r}
+# Operating systems vs Generating Revenue
+ggplot(df, aes(OperatingSystems, color=Revenue, fill=Revenue)) +
+  geom_bar()
+```
+Users of type 2 OS generated the most revenue for the site, while 1, and 3 followed.
+```{r}
+ggplot(df, aes(Region, fill=Revenue, color=Revenue)) +
+  geom_bar(binwidth=1)
+
+```
+Region 1 produced the most revenue out of all the others with region 5 producing the least.
+```{r}
+# Visitor type and revenue
+ggplot(df, aes(VisitorType, color=Revenue, fill=Revenue)) +
+  geom_bar(binwidth=2)
+```
+
+Returning visitors generated a lot more revenue than new ones
+```{r}
+ggplot(df, aes(BounceRates, color=Revenue)) +
+  geom_freqpoly()
+```
+
+A lot of sites had a high percentage of visitors just leaving without triggering any requests from our target website.
+### **Correlations**
+```{r}
+cor(df[,unlist(lapply(df, is.numeric))])
+```
+The rates were significantly correlated while types of number of sites were strongly correlated with how much time was spent in them.
+
+#### Data Preparation
+
+```{r}
+df$Weekend<- as.numeric(df$Weekend)
+df$Revenue<- as.numeric(df$Revenue)
+
+```
+```{r}
+# casting categorical columns as factors
+df$Month <- factor(df$Month)
+df$OperatingSystems <- factor(df$OperatingSystems)
+df$Browser <- factor(df$Browser)
+df$Region <- factor(df$Region)
+df$TrafficType <- factor(df$TrafficType)
+df$VisitorType <- factor(df$VisitorType)
+df$Weekend <- factor(df$Weekend)
+df$Revenue <- factor(df$Revenue)
+
+```
+
+```{r}
+library(superml)
+label <- LabelEncoder$new()
+df$Month <- label$fit_transform(df$Month)
+df$VisitorType <- label$fit_transform(df$VisitorType)
+df$Weekend <- label$fit_transform(df$Weekend)
+df$Revenue <- label$fit_transform(df$Revenue)
+```
+
+## KNN
+```{r}
+# separating features from Revenue labels
+x <- df[, -18]
+# normalizing
+normalize <- function(x){
+  return ((x-min(x)) / (max(x)-min(x)))
+}
+x$Administrative <- normalize(x$Administrative)
+x$Administrative_Duration <- normalize(x$Administrative_Duration)
+x$Informational <- normalize(x$Informational)
+x$Informational_Duration <- normalize(x$Informational_Duration)
+x$ProductRelated <- normalize(x$ProductRelated)
+x$ProductRelated_Duration <- normalize(x$ProductRelated_Duration)
+x$BounceRates <- normalize(x$BounceRates)
+x$ExitRates <- normalize(x$ExitRates)
+x$PageValues <- normalize(x$PageValues)
+x$SpecialDay <- normalize(x$SpecialDay)
+
+```
+
+```{r}
+library(caret)
+library(Amelia)
+library(e1071)
+library(factoextra)
+library(cluster)
+library(purrr)
+```
+
+```{r}
+# finding optimum k
+fviz_nbclust(x, kmeans, method="silhouette")
+```
+According to the silhouette method above, only 2 clusters are sufficient.
+
+2 clusters shall be used.
+```{r}
+# using 2 clusters 
+k <- kmeans(x,centers=3,nstart=25) 
+
+```
+
+```{r}
+# Number of records in each cluster
+k$size
+```
+```{r}
+df$cluster <- as.factor(k$cluster)
+```
+```{r}
+head(df)
+```
+### Hierarchical clustering
+```{r}
+r <- df[,1:17]
+
+```
+
+```{r}
+# scaling the data
+r$Administrative <- scale(r$Administrative)
+r$Administrative_Duration <- scale(r$Administrative_Duration)
+r$Informational <- scale(r$Informational)
+r$Informational_Duration <- scale(r$Informational_Duration)
+r$ProductRelated <- scale(r$ProductRelated)
+r$ProductRelated_Duration <- scale(r$ProductRelated_Duration)
+r$BounceRates <- scale(r$BounceRates)
+r$ExitRates <- scale(r$ExitRates)
+r$PageValues <- scale(r$PageValues)
+r$SpecialDay <- scale(r$SpecialDay)
+
+```
+ 
+```{r}
+# computing the distance
+d <- dist(r, method="euclidean")
+# Clustering  algorithm deployment
+model <- hclust(d, method="ward.D2")
+
+```
+ 
+```{r}
+plot(model, cex=0.6, hang=-1)
+
+```
+```{r}
+# Ward's method
+hc <- hclust(d, method="ward.D2")
+# cut the tree into 5 parts
+sub_grp <- cutree(hc, k=4)
+table(sub_grp)
+```
+```{r}
+plot(hc, cex=2, hang=-1 )
+rect.hclust(hc, k=4, border=2:5)
+
+```
+
+
+
+
+## Conclusions
+
+1.) Weekdays have the highest flux of customers on site.
+
+2.) Returning visitors will always generate revenue for the site
+
+3.) Most customers prefers to use the second operating system
+ 
+ ## Recommendations
+ 
+ 1.) Improve customer engagement on operating systems
+ 
+ 2.) Come up with promotional offers
+ 
